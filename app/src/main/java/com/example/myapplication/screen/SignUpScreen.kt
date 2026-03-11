@@ -17,11 +17,16 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -29,6 +34,16 @@ import com.example.myapplication.R
 
 @Composable
 fun SignUpScreen(navController: NavHostController) {
+    var email by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf(false) }
+    var pass by remember { mutableStateOf("") }
+
+    fun isValidEmail(email: String): Boolean{
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+
+
     // Purple Background
     Box(
     modifier = Modifier
@@ -66,9 +81,9 @@ fun SignUpScreen(navController: NavHostController) {
                 //these boxes are fake spacers
                 Box(modifier = Modifier.height(30.dp))
 
-                // Signup
+                // Login
                 Text(
-                    text = "Signup",
+                    text = "Log in",
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.Black
@@ -76,11 +91,14 @@ fun SignUpScreen(navController: NavHostController) {
 
                 Box(modifier = Modifier.height(8.dp))
 
-
+                // Text Fields
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        emailError = !isValidEmail(it) },
                     label = { Text("Email") },
+                    isError = emailError,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -91,12 +109,13 @@ fun SignUpScreen(navController: NavHostController) {
                 Box(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = pass,
+                    onValueChange = {pass = it},
                     label = { Text("Password") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
+                    visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(10.dp),
                     singleLine = true
                 )
@@ -104,21 +123,21 @@ fun SignUpScreen(navController: NavHostController) {
 
                 Box(modifier = Modifier.height(16.dp))
 
-                // Signup Button
-                Box(
+                // Login Button
+                Button(
+                    onClick = { navController.navigate("welcome") },    //no main screen yet
+                    enabled = isValidEmail(email),
                     modifier = Modifier
-                        .align (Alignment.End)
-                        .width(140.dp)
-                        .height(50.dp)
-                        .background(
-                            Color(0xFF4A43B5),
-                            RoundedCornerShape(30.dp)
-                        ),
-                    contentAlignment = Alignment.Center,
 
-                    ) {
+                        .width(250.dp)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A43B5)
+                    )
+                ) {
                     Text(
-                        text = "Sign up",
+                        text = "Login",
                         color = Color.White,
                         fontWeight = FontWeight.Black
                     )
@@ -130,7 +149,7 @@ fun SignUpScreen(navController: NavHostController) {
 
                 // Back Button
                 Button(
-                    onClick = { navController.navigate("login") },
+                    onClick = { navController.navigate("welcome") },
                     modifier = Modifier
                         .width(250.dp)
                         .height(50.dp),
