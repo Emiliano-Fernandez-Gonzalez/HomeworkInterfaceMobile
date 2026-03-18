@@ -1,17 +1,20 @@
 package com.example.myapplication.screen
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,25 +35,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.myapplication.R
+import androidx.compose.foundation.lazy.items
+import com.example.myapplication.components.Contact
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
-    var email by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf(false) }
-    var pass by remember { mutableStateOf("") }
+fun MainScreen(navController: NavHostController){
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
 
-    fun isValidEmail(email: String): Boolean{
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    var nameError by remember { mutableStateOf(false) }
+    var phoneError by remember { mutableStateOf(false) }
+    var contacts by remember {
+        mutableStateOf(
+            listOf(Pair("Juan", "123"), Pair("Marta", "456"), Pair("Joaquin", "789"))
+        )
     }
 
+    fun isValidName(name: String) : Boolean{
+        return name.matches(Regex("^[a-zA-Z ]+$"))
+    }
 
+    fun isValidPhone(phone: String): Boolean{
+        return phone.matches(Regex("^[0-9]{10}$"))
+    }
+
+    var formValid = isValidPhone(phone) && isValidName(name)
 
     // Purple Background
     Box(
-    modifier = Modifier
-    .fillMaxSize()
-    .background(Color(0xFF4A43B5)),
-    contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF4A43B5)),
+        contentAlignment = Alignment.Center
     ) {
 
         // White Card
@@ -61,96 +77,95 @@ fun LoginScreen(navController: NavHostController) {
                 .background(Color.White, RoundedCornerShape(40.dp))
                 .padding(24.dp),
         ) {
-
             Column(
-                modifier = Modifier
-                    .fillMaxSize(),
 
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
             ) {
-
-                // Main image *i cropped and copied the image so it has extra padding
-                Image(
-                    painter = painterResource(id = R.drawable.ic_illustration),
-                    contentDescription = "Illustration",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                )
-
-                //these boxes are fake spacers
-                Box(modifier = Modifier.height(30.dp))
-
-                // Login
-                Text(
-                    text = "Log in",
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.Black
-                )
-
-                Box(modifier = Modifier.height(8.dp))
-
-                // Text Fields
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = {
-                        email = it
-                        emailError = !isValidEmail(it) },
-                    label = { Text("Email") },
-                    isError = emailError,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    singleLine = true
-                )
-
-                Box(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = pass,
-                    onValueChange = {pass = it},
-                    label = { Text("Password") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    visualTransformation = PasswordVisualTransformation(),
-                    shape = RoundedCornerShape(10.dp),
-                    singleLine = true
-                )
-
-
-                Box(modifier = Modifier.height(16.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    // Login Button
-                    Button(
-                        onClick = { navController.navigate("contacts") },    //no main screen yet
-                        enabled = isValidEmail(email),
-                        modifier = Modifier
+                    items (contacts){
+                            contact ->
+                        Contact(name = contact.first, phone = contact.second)
+                    }
+                }
 
-                            .width(150.dp)
+                Spacer(modifier = Modifier.height(24.dp))
+                //Name
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        nameError = !isValidName(it)
+                    },
+                    label = { Text("Name") },
+                    isError = nameError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                //Phone
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = {
+                        phone = it
+                        phoneError = !isValidPhone(it)
+
+                    },
+                    label = { Text("Phone") },
+                    isError = phoneError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(vertical = 10.dp)
+                ) {
+                    //Add button
+                    Button(
+                        onClick ={
+                            if (
+                                name.isNotEmpty() && phone.isNotEmpty()
+                            ) {
+                                contacts = contacts + Pair(name, phone)
+
+                                name = ""
+                                phone = ""
+                            }
+
+                        },
+                        modifier = Modifier
+                            .width(140.dp)
                             .height(50.dp),
+                        enabled = formValid,
                         shape = RoundedCornerShape(30.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF4A43B5)
                         )
                     ) {
                         Text(
-                            text = "Login",
+                            text = "Add",
                             color = Color.White,
                             fontWeight = FontWeight.Black
                         )
                     }
 
-                    // Back Button
                     Button(
-                        onClick = { navController.navigate("welcome") },
+                        onClick ={
+                            contacts = emptyList()
+                        },
                         modifier = Modifier
-                            .width(150.dp)
+                            .width(140.dp)
                             .height(50.dp),
                         shape = RoundedCornerShape(30.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -158,14 +173,20 @@ fun LoginScreen(navController: NavHostController) {
                         )
                     ) {
                         Text(
-                            text = "Back",
+                            text = "Clear",
                             color = Color.White,
                             fontWeight = FontWeight.Black
                         )
                     }
                 }
             }
+
+
+
+
+
         }
     }
+
 
 }

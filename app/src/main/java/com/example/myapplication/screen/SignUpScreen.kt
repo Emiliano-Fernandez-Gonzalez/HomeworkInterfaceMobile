@@ -1,3 +1,5 @@
+@file:JvmName("SignupScreenKt")
+
 package com.example.myapplication.screen
 
 import androidx.compose.foundation.Image
@@ -5,13 +7,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -26,30 +31,63 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.myapplication.R
 
+
 @Composable
 fun SignUpScreen(navController: NavHostController) {
+    val scrollState = rememberScrollState()
+
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf(false) }
     var pass by remember { mutableStateOf("") }
+    var passConfirm by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+
+    var emailError by remember { mutableStateOf(false) }
+    var nameError by remember { mutableStateOf(false) }
+    var passError by remember { mutableStateOf(false) }
+    var phoneError by remember {mutableStateOf(false)}
+
+
+
 
     fun isValidEmail(email: String): Boolean{
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    fun isValidName(name: String) : Boolean{
+        return name.matches(Regex("^[a-zA-Z ]+$"))
+    }
 
+    fun isValidPhone(phone: String): Boolean{
+        return phone.matches(Regex("^[0-9]{10}$"))
+    }
+
+    fun passwordsMatch(password1:String, password2:String): Boolean{
+        return password1 == password2
+    }
+
+    var formValid =
+        name.isNotEmpty() &&
+        email.isNotEmpty() &&
+        pass.isNotEmpty() &&
+        passConfirm.isNotEmpty() &&
+        phone.isNotEmpty() &&
+        isValidName(name) &&
+        isValidEmail(email) &&
+        isValidPhone(phone) &&
+        passwordsMatch(pass, passConfirm)
 
     // Purple Background
     Box(
-    modifier = Modifier
-    .fillMaxSize()
-    .background(Color(0xFF4A43B5)),
-    contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF4A43B5)),
+        contentAlignment = Alignment.Center
     ) {
 
         // White Card
@@ -63,10 +101,11 @@ fun SignUpScreen(navController: NavHostController) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
-
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
+
             ) {
 
                 // Main image *i cropped and copied the image so it has extra padding
@@ -81,9 +120,9 @@ fun SignUpScreen(navController: NavHostController) {
                 //these boxes are fake spacers
                 Box(modifier = Modifier.height(30.dp))
 
-                // Login
+                // Sign Up
                 Text(
-                    text = "Log in",
+                    text = "Sign Up",
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.Black
@@ -91,7 +130,24 @@ fun SignUpScreen(navController: NavHostController) {
 
                 Box(modifier = Modifier.height(8.dp))
 
-                // Text Fields
+                // Text Field
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        nameError = !isValidName(it)
+                    },
+                    label = { Text("Name") },
+                    isError = nameError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    singleLine = true
+                )
+
+                Box(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = email,
                     onValueChange = {
@@ -101,7 +157,7 @@ fun SignUpScreen(navController: NavHostController) {
                     isError = emailError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(56.dp),
                     shape = RoundedCornerShape(10.dp),
                     singleLine = true
                 )
@@ -110,63 +166,95 @@ fun SignUpScreen(navController: NavHostController) {
 
                 OutlinedTextField(
                     value = pass,
-                    onValueChange = {pass = it},
+                    onValueChange = {
+                        pass = it
+                        passError = !passwordsMatch(pass, passConfirm)
+                    },
                     label = { Text("Password") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    visualTransformation = PasswordVisualTransformation(),
+                        .height(56.dp),
                     shape = RoundedCornerShape(10.dp),
                     singleLine = true
                 )
 
+                Box(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = passConfirm,
+                    onValueChange = {
+                        passConfirm = it
+                        passError = !passwordsMatch(pass, passConfirm)
+                    },
+                    label = { Text("Confirm password") },
+                    isError = passError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    singleLine = true
+                )
 
                 Box(modifier = Modifier.height(16.dp))
 
-                // Login Button
-                Button(
-                    onClick = { navController.navigate("welcome") },    //no main screen yet
-                    enabled = isValidEmail(email),
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = {
+                        phone = it
+                        phoneError = !isValidPhone(it)
+                    },
+                    label = { Text("Phone") },
+                    isError = phoneError,
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    singleLine = true
+                )
 
-                        .width(250.dp)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(30.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A43B5)
-                    )
+                Box(modifier = Modifier.height(16.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    Text(
-                        text = "Login",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black
-                    )
+                    // SignUp Button
+                    Button(
+                        onClick = { navController.navigate("contacts") },    //no main screen yet
+                        enabled = formValid,
+                        modifier = Modifier
+
+                            .width(140.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4A43B5)
+                        )
+                    ) {
+                        Text(
+                            text = "Sign Up",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+
+                    // Back Button
+                    Button(
+                        onClick = { navController.navigate("welcome") },
+                        modifier = Modifier
+                            .width(140.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4A43B5)
+                        )
+                    ) {
+                        Text(
+                            text = "Back",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
-
-
-
-                Box(modifier = Modifier.height(24.dp))
-
-                // Back Button
-                Button(
-                    onClick = { navController.navigate("welcome") },
-                    modifier = Modifier
-                        .width(250.dp)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(30.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A43B5)
-                    )
-                ) {
-                    Text(
-                        text = "Back",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-
             }
         }
     }
-
 }

@@ -13,10 +13,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
-            //HomeWorkScreen()
-            //LoginScreen()
-            //SignUpScreen()
             AppNavigation()
         }
     }
